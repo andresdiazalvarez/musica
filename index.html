@@ -13,8 +13,8 @@
         --text: #fff4fb;
         --muted: #f2b7d7;
         --line: #7e1d58;
-        --accent: #ff5fbd;
-        --accent-strong: #ff8dd2;
+        --accent: #00f06c;
+        --accent-strong: #65ff9f;
         --warn: #ffd1ec;
       }
 
@@ -41,10 +41,10 @@
       }
 
       .app {
-        width: min(1180px, calc(100% - 32px));
+        width: min(1180px, calc(100% - 24px));
         min-height: 100vh;
         margin: 0 auto;
-        padding: 28px 0;
+        padding: 12px 0 28px;
         display: grid;
         grid-template-rows: auto 1fr auto;
         gap: 18px;
@@ -54,8 +54,8 @@
         display: grid;
         grid-template-columns: 1fr;
         align-items: center;
-        gap: 16px;
-        padding-bottom: 14px;
+        gap: 12px;
+        padding-bottom: 18px;
         border-bottom: 1px solid var(--line);
         text-align: center;
       }
@@ -74,23 +74,35 @@
       }
 
       .primary {
-        width: min(100%, 760px);
-        min-height: 86px;
+        width: min(100%, 1040px);
+        min-height: 80vh;
         justify-self: center;
         border: 0;
-        border-radius: 8px;
+        border-radius: 18px;
         padding: 0 28px;
-        background: linear-gradient(135deg, #ff4eb6 0%, #ff8dd2 100%);
-        color: #2a071b;
-        font-size: clamp(1.35rem, 4vw, 2.35rem);
-        font-weight: 860;
+        background:
+          radial-gradient(circle at 24% 18%, rgba(214, 255, 227, 0.9), transparent 22%),
+          linear-gradient(135deg, #00c853 0%, #00f06c 46%, #7cff9f 100%);
+        color: #002b12;
+        font-size: clamp(2.4rem, 8vw, 6.8rem);
+        font-weight: 920;
+        line-height: 1.02;
         cursor: pointer;
         white-space: normal;
-        box-shadow: 0 18px 42px rgba(90, 12, 60, 0.28);
+        box-shadow: 0 26px 70px rgba(0, 78, 32, 0.42);
       }
 
       .primary:hover {
-        background: linear-gradient(135deg, #ff78c9 0%, #ffc2e9 100%);
+        background:
+          radial-gradient(circle at 24% 18%, rgba(232, 255, 238, 0.95), transparent 22%),
+          linear-gradient(135deg, #00e060 0%, #36ff82 48%, #b1ffc6 100%);
+      }
+
+      .voice-status {
+        margin: 0;
+        color: #fff4fb;
+        font-size: 0.92rem;
+        opacity: 0.92;
       }
 
       main {
@@ -299,7 +311,7 @@
       @media (max-width: 780px) {
         .app {
           width: min(100% - 20px, 680px);
-          padding: 18px 0;
+          padding: 10px 0 18px;
         }
 
         header {
@@ -309,6 +321,7 @@
 
         .primary {
           width: 100%;
+          min-height: 80vh;
         }
 
         main {
@@ -329,6 +342,7 @@
           <p class="subtitle">Elige la carpeta de canciones de tu tarjeta SD y reproduce cualquier archivo de audio.</p>
         </div>
         <button class="primary" id="openFolder" type="button">Abrir carpeta de la tarjeta SD</button>
+        <p class="voice-status" id="voiceStatus">Voz: preparando</p>
         <input class="hidden" id="folderInput" type="file" webkitdirectory multiple accept="audio/*" />
       </header>
 
@@ -398,6 +412,7 @@
       const trackPath = document.querySelector("#trackPath");
       const disc = document.querySelector("#disc");
       const discLabel = document.querySelector("#discLabel");
+      const voiceStatus = document.querySelector("#voiceStatus");
 
       let songs = [];
       let filteredSongs = [];
@@ -536,7 +551,7 @@
         }
       }
 
-      openFolderButton.addEventListener("click", async () => {
+      async function openMusicFolder() {
         if ("showDirectoryPicker" in window) {
           try {
             const handle = await window.showDirectoryPicker({ mode: "read" });
@@ -551,7 +566,75 @@
         }
 
         folderInput.click();
-      });
+      }
+
+      function handleVoiceCommand(transcript) {
+        const command = transcript.toLowerCase();
+
+        if (command.includes("abrir") || command.includes("carpeta") || command.includes("tarjeta")) {
+          openMusicFolder();
+          return;
+        }
+
+        if (command.includes("siguiente")) {
+          playNextSong();
+          return;
+        }
+
+        if (command.includes("pausa") || command.includes("parar")) {
+          audio.pause();
+          return;
+        }
+
+        if (command.includes("reproducir") || command.includes("play")) {
+          audio.play();
+        }
+      }
+
+      function startVoiceControl() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+          voiceStatus.textContent = "Voz: no disponible en este navegador";
+          return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "es-ES";
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.addEventListener("start", () => {
+          voiceStatus.textContent = "Voz: activa";
+        });
+
+        recognition.addEventListener("result", (event) => {
+          const lastResult = event.results[event.results.length - 1];
+          const transcript = lastResult[0].transcript;
+          voiceStatus.textContent = `Voz: ${transcript.trim()}`;
+          handleVoiceCommand(transcript);
+        });
+
+        recognition.addEventListener("end", () => {
+          try {
+            recognition.start();
+          } catch {
+            voiceStatus.textContent = "Voz: detenida";
+          }
+        });
+
+        recognition.addEventListener("error", () => {
+          voiceStatus.textContent = "Voz: necesita permiso de microfono";
+        });
+
+        try {
+          recognition.start();
+        } catch {
+          voiceStatus.textContent = "Voz: pulsa el boton para activar";
+        }
+      }
+
+      openFolderButton.addEventListener("click", openMusicFolder);
 
       folderInput.addEventListener("change", () => {
         loadSongs(readFallbackFiles(folderInput.files));
@@ -570,6 +653,8 @@
           URL.revokeObjectURL(currentUrl);
         }
       });
+
+      startVoiceControl();
     </script>
   </body>
 </html>

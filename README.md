@@ -11,6 +11,15 @@ App web sencilla para escuchar musica local desde el navegador.
 
 La app no sube tus canciones a internet. Solo pide permiso al navegador para leer la carpeta que tu elijas.
 
+Tambien acepta comandos de voz en navegadores compatibles:
+
+- "abrir" o "abrir carpeta"
+- "siguiente"
+- "pausa"
+- "reproducir"
+
+El navegador puede pedir permiso para usar el microfono y para leer la carpeta. Es una proteccion propia del navegador y no se puede desactivar desde una web publicada en GitHub Pages.
+
 ## Publicar en GitHub Pages
 
 1. Crea un repositorio nuevo en GitHub.
