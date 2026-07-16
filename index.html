@@ -523,6 +523,19 @@
         renderSongs();
       }
 
+      function playNextSong() {
+        if (filteredSongs.length === 0) {
+          return;
+        }
+
+        const activeIndex = filteredSongs.findIndex((song) => song.id === activeId);
+        const nextIndex = activeIndex >= 0 ? activeIndex + 1 : 0;
+
+        if (nextIndex < filteredSongs.length) {
+          playSong(filteredSongs[nextIndex]);
+        }
+      }
+
       openFolderButton.addEventListener("click", async () => {
         if ("showDirectoryPicker" in window) {
           try {
@@ -548,7 +561,10 @@
 
       audio.addEventListener("play", () => disc.classList.add("playing"));
       audio.addEventListener("pause", () => disc.classList.remove("playing"));
-      audio.addEventListener("ended", () => disc.classList.remove("playing"));
+      audio.addEventListener("ended", () => {
+        disc.classList.remove("playing");
+        playNextSong();
+      });
       window.addEventListener("beforeunload", () => {
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
