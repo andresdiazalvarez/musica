@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mi Musica</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #111315;
+        --panel: #191d20;
+        --panel-2: #20262a;
+        --text: #f3f0ea;
+        --muted: #aaa39a;
+        --line: #30373c;
+        --accent: #4fb286;
+        --accent-strong: #6ed8a7;
+        --warn: #d6b35f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background:
+          linear-gradient(135deg, rgba(79, 178, 134, 0.18), transparent 35%),
+          radial-gradient(circle at 95% 10%, rgba(214, 179, 95, 0.13), transparent 28%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .app {
+        width: min(1180px, calc(100% - 32px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 28px 0;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 18px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.6rem, 3vw, 2.6rem);
+        font-weight: 760;
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      .primary {
+        min-height: 44px;
+        border: 0;
+        border-radius: 8px;
+        padding: 0 18px;
+        background: var(--accent);
+        color: #07130e;
+        font-weight: 760;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .primary:hover {
+        background: var(--accent-strong);
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+        gap: 18px;
+        min-height: 0;
+      }
+
+      .sidebar,
+      .player {
+        background: rgba(25, 29, 32, 0.88);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        min-height: 0;
+      }
+
+      .sidebar {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        overflow: hidden;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stat {
+        padding: 16px;
+        background: var(--panel);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.6rem;
+        line-height: 1;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .search {
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .search input {
+        width: 100%;
+        height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: #111517;
+        color: var(--text);
+        outline: none;
+      }
+
+      .search input:focus {
+        border-color: var(--accent);
+      }
+
+      .songs {
+        overflow: auto;
+        min-height: 260px;
+      }
+
+      .song {
+        width: 100%;
+        border: 0;
+        border-bottom: 1px solid rgba(48, 55, 60, 0.74);
+        background: transparent;
+        color: var(--text);
+        text-align: left;
+        padding: 14px 16px;
+        cursor: pointer;
+      }
+
+      .song:hover,
+      .song.active {
+        background: var(--panel-2);
+      }
+
+      .song strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.96rem;
+      }
+
+      .song span {
+        display: block;
+        margin-top: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .player {
+        display: grid;
+        grid-template-rows: 1fr auto;
+        overflow: hidden;
+      }
+
+      .now {
+        display: grid;
+        place-items: center;
+        padding: 28px;
+      }
+
+      .disc {
+        width: min(390px, 78vw);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background:
+          repeating-radial-gradient(circle, #101314 0 9px, #1d2326 10px 14px),
+          radial-gradient(circle, #293136, #0e1112);
+        border: 1px solid #3a4247;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+        position: relative;
+      }
+
+      .disc::before {
+        content: "";
+        position: absolute;
+        inset: 11%;
+        border: 1px solid rgba(243, 240, 234, 0.08);
+        border-radius: 50%;
+      }
+
+      .disc.playing {
+        animation: spin 8s linear infinite;
+      }
+
+      .label {
+        width: 42%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        padding: 18px;
+        background: #d6b35f;
+        color: #16110a;
+        text-align: center;
+        font-weight: 800;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .controls {
+        padding: 18px;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+      }
+
+      .track-title {
+        margin: 0 0 10px;
+        font-size: 1.15rem;
+        font-weight: 760;
+        overflow-wrap: anywhere;
+      }
+
+      .track-path {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 0.85rem;
+        overflow-wrap: anywhere;
+      }
+
+      audio {
+        width: 100%;
+      }
+
+      .empty {
+        padding: 28px 18px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .hint {
+        color: var(--warn);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 780px) {
+        .app {
+          width: min(100% - 20px, 680px);
+          padding: 18px 0;
+        }
+
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .primary {
+          width: 100%;
+        }
+
+        main {
+          grid-template-columns: 1fr;
+        }
+
+        .player {
+          min-height: 430px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div>
+          <h1>Mi Musica</h1>
+          <p class="subtitle">Elige tu carpeta de canciones y reproduce cualquier archivo de audio.</p>
+        </div>
+        <button class="primary" id="openFolder" type="button">Abrir carpeta de musica</button>
+        <input class="hidden" id="folderInput" type="file" webkitdirectory multiple accept="audio/*" />
+      </header>
+
+      <main>
+        <section class="sidebar" aria-label="Canciones">
+          <div class="stats">
+            <div class="stat">
+              <strong id="songCount">0</strong>
+              <span>canciones</span>
+            </div>
+            <div class="stat">
+              <strong id="formatCount">0</strong>
+              <span>formatos</span>
+            </div>
+          </div>
+
+          <div class="search">
+            <input id="search" type="search" placeholder="Buscar cancion" autocomplete="off" />
+          </div>
+
+          <div class="songs" id="songs">
+            <div class="empty">
+              Pulsa el boton para abrir tu carpeta de musica. La app encontrara MP3, WAV, OGG, FLAC, M4A y otros audios.
+            </div>
+          </div>
+        </section>
+
+        <section class="player" aria-label="Reproductor">
+          <div class="now">
+            <div class="disc" id="disc">
+              <div class="label" id="discLabel">Sin cancion</div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <p class="track-title" id="trackTitle">Selecciona una cancion</p>
+            <p class="track-path" id="trackPath">Todavia no hay ningun archivo cargado.</p>
+            <audio id="audio" controls preload="metadata"></audio>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const audioExtensions = new Set([
+        "aac",
+        "aif",
+        "aiff",
+        "flac",
+        "m4a",
+        "mp3",
+        "oga",
+        "ogg",
+        "opus",
+        "wav",
+        "webm",
+      ]);
+
+      const openFolderButton = document.querySelector("#openFolder");
+      const folderInput = document.querySelector("#folderInput");
+      const songsElement = document.querySelector("#songs");
+      const searchInput = document.querySelector("#search");
+      const songCount = document.querySelector("#songCount");
+      const formatCount = document.querySelector("#formatCount");
+      const audio = document.querySelector("#audio");
+      const trackTitle = document.querySelector("#trackTitle");
+      const trackPath = document.querySelector("#trackPath");
+      const disc = document.querySelector("#disc");
+      const discLabel = document.querySelector("#discLabel");
+
+      let songs = [];
+      let filteredSongs = [];
+      let currentUrl = "";
+      let activeId = "";
+
+      function getExtension(name) {
+        const parts = name.toLowerCase().split(".");
+        return parts.length > 1 ? parts.at(-1) : "";
+      }
+
+      function cleanTitle(fileName) {
+        return fileName.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+      }
+
+      function isAudioFile(file) {
+        const extension = getExtension(file.name);
+        return file.type.startsWith("audio/") || audioExtensions.has(extension);
+      }
+
+      async function readModernDirectory(directoryHandle, path = "") {
+        const found = [];
+
+        for await (const entry of directoryHandle.values()) {
+          const entryPath = path ? `${path}/${entry.name}` : entry.name;
+
+          if (entry.kind === "file") {
+            const file = await entry.getFile();
+            if (isAudioFile(file)) {
+              found.push({ file, path: entryPath, id: `${entryPath}-${file.size}-${file.lastModified}` });
+            }
+          }
+
+          if (entry.kind === "directory") {
+            found.push(...(await readModernDirectory(entry, entryPath)));
+          }
+        }
+
+        return found;
+      }
+
+      function readFallbackFiles(files) {
+        return Array.from(files)
+          .filter(isAudioFile)
+          .map((file) => ({
+            file,
+            path: file.webkitRelativePath || file.name,
+            id: `${file.webkitRelativePath || file.name}-${file.size}-${file.lastModified}`,
+          }));
+      }
+
+      function loadSongs(nextSongs) {
+        songs = nextSongs.sort((a, b) => a.path.localeCompare(b.path, "es", { sensitivity: "base" }));
+        activeId = "";
+        applyFilter();
+        updateStats();
+
+        if (songs.length === 0) {
+          songsElement.innerHTML = '<div class="empty hint">No he encontrado archivos de audio en esa carpeta.</div>';
+        }
+      }
+
+      function updateStats() {
+        const formats = new Set(songs.map((song) => getExtension(song.file.name)).filter(Boolean));
+        songCount.textContent = songs.length.toString();
+        formatCount.textContent = formats.size.toString();
+      }
+
+      function applyFilter() {
+        const query = searchInput.value.trim().toLowerCase();
+        filteredSongs = query
+          ? songs.filter((song) => song.path.toLowerCase().includes(query))
+          : [...songs];
+        renderSongs();
+      }
+
+      function renderSongs() {
+        if (songs.length === 0) {
+          return;
+        }
+
+        if (filteredSongs.length === 0) {
+          songsElement.innerHTML = '<div class="empty">No hay canciones que coincidan con la busqueda.</div>';
+          return;
+        }
+
+        songsElement.replaceChildren(
+          ...filteredSongs.map((song) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `song${song.id === activeId ? " active" : ""}`;
+            button.dataset.id = song.id;
+
+            const title = document.createElement("strong");
+            title.textContent = cleanTitle(song.file.name);
+
+            const path = document.createElement("span");
+            path.textContent = song.path;
+
+            button.append(title, path);
+            button.addEventListener("click", () => playSong(song));
+            return button;
+          }),
+        );
+      }
+
+      function playSong(song) {
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+        }
+
+        currentUrl = URL.createObjectURL(song.file);
+        activeId = song.id;
+        audio.src = currentUrl;
+        audio.play().catch(() => {
+          trackPath.textContent = "Pulsa reproducir en el control de audio para empezar.";
+        });
+
+        const title = cleanTitle(song.file.name);
+        trackTitle.textContent = title;
+        trackPath.textContent = song.path;
+        discLabel.textContent = title || "Audio";
+        renderSongs();
+      }
+
+      openFolderButton.addEventListener("click", async () => {
+        if ("showDirectoryPicker" in window) {
+          try {
+            const handle = await window.showDirectoryPicker({ mode: "read" });
+            const found = await readModernDirectory(handle);
+            loadSongs(found);
+            return;
+          } catch (error) {
+            if (error.name === "AbortError") {
+              return;
+            }
+          }
+        }
+
+        folderInput.click();
+      });
+
+      folderInput.addEventListener("change", () => {
+        loadSongs(readFallbackFiles(folderInput.files));
+      });
+
+      searchInput.addEventListener("input", applyFilter);
+
+      audio.addEventListener("play", () => disc.classList.add("playing"));
+      audio.addEventListener("pause", () => disc.classList.remove("playing"));
+      audio.addEventListener("ended", () => disc.classList.remove("playing"));
+      window.addEventListener("beforeunload", () => {
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+        }
+      });
+    </script>
+  </body>
+</html>
