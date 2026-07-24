@@ -5,7 +5,7 @@ App web sencilla para escuchar musica local desde el navegador.
 ## Como usarla
 
 1. Abre la app en el navegador.
-2. Pulsa **Abrir carpeta de musica**.
+2. Pulsa **Abrir carpeta de la tarjeta SD**.
 3. Elige la carpeta donde tienes tus canciones.
 4. Selecciona una cancion de la lista para reproducirla.
 
@@ -15,8 +15,19 @@ Tambien acepta comandos de voz en navegadores compatibles:
 
 - "abrir" o "abrir carpeta"
 - "siguiente"
+- "adelante"
+- "marcha adelante"
+- "anterior", "atras" o "marcha atras"
 - "pausa"
+- "parada" o "parar"
 - "reproducir"
+
+La pantalla principal tiene controles grandes:
+
+- Abrir carpeta: 50% de la pantalla de controles
+- Play / Pausa: 20%
+- Parada: 10%
+- Marcha atras / Marcha adelante: 20%
 
 El navegador puede pedir permiso para usar el microfono y para leer la carpeta. Es una proteccion propia del navegador y no se puede desactivar desde una web publicada en GitHub Pages.
 

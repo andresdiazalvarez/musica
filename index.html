@@ -46,7 +46,7 @@
         margin: 0 auto;
         padding: 12px 0 28px;
         display: grid;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto auto 1fr;
         gap: 18px;
       }
 
@@ -54,8 +54,8 @@
         display: grid;
         grid-template-columns: 1fr;
         align-items: center;
-        gap: 12px;
-        padding-bottom: 18px;
+        gap: 8px;
+        padding-bottom: 4px;
         border-bottom: 1px solid var(--line);
         text-align: center;
       }
@@ -74,9 +74,8 @@
       }
 
       .primary {
-        width: min(100%, 1040px);
-        min-height: 80vh;
-        justify-self: center;
+        width: 100%;
+        height: 100%;
         border: 0;
         border-radius: 18px;
         padding: 0 28px;
@@ -103,6 +102,48 @@
         color: #fff4fb;
         font-size: 0.92rem;
         opacity: 0.92;
+      }
+
+      .button-deck {
+        min-height: calc(100vh - 104px);
+        display: grid;
+        grid-template-rows: 50fr 20fr 10fr 20fr;
+        gap: 10px;
+      }
+
+      .transport-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        min-height: 0;
+      }
+
+      .control-button {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 16px;
+        padding: 0 18px;
+        color: #fff4fb;
+        font-weight: 900;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 18px 48px rgba(62, 10, 44, 0.3);
+      }
+
+      .play-button {
+        background: linear-gradient(135deg, #1b102c 0%, #7d2cff 100%);
+        font-size: clamp(2rem, 6vw, 4.8rem);
+      }
+
+      .stop-button {
+        background: linear-gradient(135deg, #470818 0%, #ff225c 100%);
+        font-size: clamp(1.35rem, 4vw, 3.1rem);
+      }
+
+      .skip-button {
+        background: linear-gradient(135deg, #141d40 0%, #2788ff 100%);
+        font-size: clamp(1.4rem, 4.8vw, 3.8rem);
       }
 
       main {
@@ -321,7 +362,10 @@
 
         .primary {
           width: 100%;
-          min-height: 80vh;
+        }
+
+        .button-deck {
+          min-height: calc(100vh - 122px);
         }
 
         main {
@@ -341,10 +385,19 @@
           <h1>Mi Musica</h1>
           <p class="subtitle">Elige la carpeta de canciones de tu tarjeta SD y reproduce cualquier archivo de audio.</p>
         </div>
-        <button class="primary" id="openFolder" type="button">Abrir carpeta de la tarjeta SD</button>
         <p class="voice-status" id="voiceStatus">Voz: preparando</p>
         <input class="hidden" id="folderInput" type="file" webkitdirectory multiple accept="audio/*" />
       </header>
+
+      <section class="button-deck" aria-label="Controles grandes">
+        <button class="primary" id="openFolder" type="button">Abrir carpeta de la tarjeta SD</button>
+        <button class="control-button play-button" id="playPause" type="button">Play / Pausa</button>
+        <button class="control-button stop-button" id="stop" type="button">Parada</button>
+        <div class="transport-row">
+          <button class="control-button skip-button" id="previousSong" type="button">Marcha atras</button>
+          <button class="control-button skip-button" id="nextSong" type="button">Marcha adelante</button>
+        </div>
+      </section>
 
       <main>
         <section class="sidebar" aria-label="Canciones">
@@ -402,6 +455,10 @@
       ]);
 
       const openFolderButton = document.querySelector("#openFolder");
+      const playPauseButton = document.querySelector("#playPause");
+      const stopButton = document.querySelector("#stop");
+      const previousSongButton = document.querySelector("#previousSong");
+      const nextSongButton = document.querySelector("#nextSong");
       const folderInput = document.querySelector("#folderInput");
       const songsElement = document.querySelector("#songs");
       const searchInput = document.querySelector("#search");
@@ -551,6 +608,36 @@
         }
       }
 
+      function playPreviousSong() {
+        if (filteredSongs.length === 0) {
+          return;
+        }
+
+        const activeIndex = filteredSongs.findIndex((song) => song.id === activeId);
+        const previousIndex = activeIndex > 0 ? activeIndex - 1 : 0;
+        playSong(filteredSongs[previousIndex]);
+      }
+
+      function togglePlayback() {
+        if (!audio.src && filteredSongs.length > 0) {
+          playSong(filteredSongs[0]);
+          return;
+        }
+
+        if (audio.paused) {
+          audio.play();
+          return;
+        }
+
+        audio.pause();
+      }
+
+      function stopPlayback() {
+        audio.pause();
+        audio.currentTime = 0;
+        disc.classList.remove("playing");
+      }
+
       async function openMusicFolder() {
         if ("showDirectoryPicker" in window) {
           try {
@@ -576,18 +663,34 @@
           return;
         }
 
-        if (command.includes("siguiente")) {
+        if (command.includes("siguiente") || command.includes("adelante") || command.includes("marcha adelante")) {
           playNextSong();
           return;
         }
 
-        if (command.includes("pausa") || command.includes("parar")) {
+        if (
+          command.includes("anterior") ||
+          command.includes("atras") ||
+          command.includes("atrás") ||
+          command.includes("marcha atras") ||
+          command.includes("marcha atrás")
+        ) {
+          playPreviousSong();
+          return;
+        }
+
+        if (command.includes("pausa")) {
           audio.pause();
           return;
         }
 
+        if (command.includes("parar") || command.includes("parada")) {
+          stopPlayback();
+          return;
+        }
+
         if (command.includes("reproducir") || command.includes("play")) {
-          audio.play();
+          togglePlayback();
         }
       }
 
@@ -635,6 +738,10 @@
       }
 
       openFolderButton.addEventListener("click", openMusicFolder);
+      playPauseButton.addEventListener("click", togglePlayback);
+      stopButton.addEventListener("click", stopPlayback);
+      previousSongButton.addEventListener("click", playPreviousSong);
+      nextSongButton.addEventListener("click", playNextSong);
 
       folderInput.addEventListener("change", () => {
         loadSongs(readFallbackFiles(folderInput.files));
