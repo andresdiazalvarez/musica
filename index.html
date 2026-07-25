@@ -97,13 +97,6 @@
           linear-gradient(135deg, #00e060 0%, #36ff82 48%, #b1ffc6 100%);
       }
 
-      .voice-status {
-        margin: 0;
-        color: #fff4fb;
-        font-size: 0.92rem;
-        opacity: 0.92;
-      }
-
       .button-deck {
         min-height: calc(100vh - 104px);
         display: grid;
@@ -385,7 +378,6 @@
           <h1>Mi Musica</h1>
           <p class="subtitle">Elige la carpeta de canciones de tu tarjeta SD y reproduce cualquier archivo de audio.</p>
         </div>
-        <p class="voice-status" id="voiceStatus">Voz: preparando</p>
         <input class="hidden" id="folderInput" type="file" webkitdirectory multiple accept="audio/*" />
       </header>
 
@@ -469,7 +461,6 @@
       const trackPath = document.querySelector("#trackPath");
       const disc = document.querySelector("#disc");
       const discLabel = document.querySelector("#discLabel");
-      const voiceStatus = document.querySelector("#voiceStatus");
 
       let songs = [];
       let filteredSongs = [];
@@ -655,88 +646,6 @@
         folderInput.click();
       }
 
-      function handleVoiceCommand(transcript) {
-        const command = transcript.toLowerCase();
-
-        if (command.includes("abrir") || command.includes("carpeta") || command.includes("tarjeta")) {
-          openMusicFolder();
-          return;
-        }
-
-        if (command.includes("siguiente") || command.includes("adelante") || command.includes("marcha adelante")) {
-          playNextSong();
-          return;
-        }
-
-        if (
-          command.includes("anterior") ||
-          command.includes("atras") ||
-          command.includes("atrás") ||
-          command.includes("marcha atras") ||
-          command.includes("marcha atrás")
-        ) {
-          playPreviousSong();
-          return;
-        }
-
-        if (command.includes("pausa")) {
-          audio.pause();
-          return;
-        }
-
-        if (command.includes("parar") || command.includes("parada")) {
-          stopPlayback();
-          return;
-        }
-
-        if (command.includes("reproducir") || command.includes("play")) {
-          togglePlayback();
-        }
-      }
-
-      function startVoiceControl() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        if (!SpeechRecognition) {
-          voiceStatus.textContent = "Voz: no disponible en este navegador";
-          return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.lang = "es-ES";
-        recognition.continuous = true;
-        recognition.interimResults = false;
-
-        recognition.addEventListener("start", () => {
-          voiceStatus.textContent = "Voz: activa";
-        });
-
-        recognition.addEventListener("result", (event) => {
-          const lastResult = event.results[event.results.length - 1];
-          const transcript = lastResult[0].transcript;
-          voiceStatus.textContent = `Voz: ${transcript.trim()}`;
-          handleVoiceCommand(transcript);
-        });
-
-        recognition.addEventListener("end", () => {
-          try {
-            recognition.start();
-          } catch {
-            voiceStatus.textContent = "Voz: detenida";
-          }
-        });
-
-        recognition.addEventListener("error", () => {
-          voiceStatus.textContent = "Voz: necesita permiso de microfono";
-        });
-
-        try {
-          recognition.start();
-        } catch {
-          voiceStatus.textContent = "Voz: pulsa el boton para activar";
-        }
-      }
-
       openFolderButton.addEventListener("click", openMusicFolder);
       playPauseButton.addEventListener("click", togglePlayback);
       stopButton.addEventListener("click", stopPlayback);
@@ -760,8 +669,6 @@
           URL.revokeObjectURL(currentUrl);
         }
       });
-
-      startVoiceControl();
     </script>
   </body>
 </html>
