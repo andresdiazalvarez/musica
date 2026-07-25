@@ -28,6 +28,9 @@ El navegador puede pedir permiso para leer la carpeta. Es una proteccion propia 
    - `README.md`
    - `.nojekyll`
    - `.gitignore`
+   - `manifest.webmanifest`
+   - `sw.js`
+   - `icon.svg`
 3. En GitHub, entra en **Settings > Pages**.
 4. En **Build and deployment**, selecciona:
    - Source: **Deploy from a branch**
@@ -44,3 +47,13 @@ https://tu-usuario.github.io/tu-repositorio/
 ## Nota importante
 
 El boton moderno de abrir carpeta funciona mejor en Chrome o Edge. En otros navegadores la app usa el selector compatible de carpeta/archivos cuando esta disponible.
+
+## Instalar en el movil
+
+Para que salga **Instalar app** en Android/Chrome, la web incluye:
+
+- `manifest.webmanifest`
+- `sw.js`
+- `icon.svg`
+
+Despues de subir estos archivos a GitHub Pages, abre la web publicada desde Chrome. Si antes solo salia **Crear acceso directo**, cierra la pestaña, vuelve a abrir la URL y espera unos segundos para que el navegador detecte el modo app.
