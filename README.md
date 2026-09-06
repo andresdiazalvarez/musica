@@ -8,6 +8,7 @@ App web sencilla para escuchar musica local desde el navegador.
 2. Pulsa **Abrir carpeta de la tarjeta SD**.
 3. Elige la carpeta donde tienes tus canciones.
 4. Selecciona una cancion de la lista para reproducirla.
+5. Pulsa **Ajustes de auriculares** para regular cada oido por separado.
 
 La app no sube tus canciones a internet. Solo pide permiso al navegador para leer la carpeta que tu elijas.
 
@@ -17,6 +18,13 @@ La pantalla principal tiene controles grandes:
 - Play / Pausa: 20%
 - Parada: 10%
 - Marcha atras / Marcha adelante: 20%
+
+La pantalla de auriculares permite ajustar por separado:
+
+- Volumen del oido izquierdo y derecho
+- Graves del oido izquierdo y derecho
+- Medios del oido izquierdo y derecho
+- Agudos del oido izquierdo y derecho
 
 El navegador puede pedir permiso para leer la carpeta. Es una proteccion propia del navegador y no se puede desactivar desde una web publicada en GitHub Pages.
 

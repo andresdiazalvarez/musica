@@ -80,6 +80,23 @@
         font-size: 0.98rem;
       }
 
+      .settings-open,
+      .back-button {
+        min-height: 48px;
+        border: 0;
+        border-radius: 12px;
+        padding: 0 18px;
+        background: linear-gradient(135deg, #24144a 0%, #885cff 100%);
+        color: #fff4fb;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .settings-open {
+        justify-self: center;
+        width: min(100%, 420px);
+      }
+
       .primary {
         width: 100%;
         height: 100%;
@@ -144,6 +161,81 @@
       .skip-button {
         background: linear-gradient(135deg, #141d40 0%, #2788ff 100%);
         font-size: clamp(1.4rem, 4.8vw, 3.8rem);
+      }
+
+      .screen.hidden-screen {
+        display: none;
+      }
+
+      .screen {
+        display: grid;
+        gap: 18px;
+      }
+
+      .settings-screen {
+        min-height: calc(100vh - 112px);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 16px;
+      }
+
+      .settings-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .settings-head h2 {
+        margin: 0;
+        font-size: clamp(1.6rem, 4vw, 3rem);
+        letter-spacing: 0;
+      }
+
+      .ears {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .ear-panel {
+        display: grid;
+        align-content: start;
+        gap: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: linear-gradient(160deg, rgba(58, 13, 40, 0.95), rgba(86, 16, 60, 0.9));
+      }
+
+      .ear-panel h3 {
+        margin: 0;
+        font-size: clamp(1.4rem, 4vw, 2.7rem);
+        letter-spacing: 0;
+      }
+
+      .slider-control {
+        display: grid;
+        gap: 8px;
+      }
+
+      .slider-control label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--text);
+        font-weight: 800;
+      }
+
+      .slider-control span {
+        color: #ffd1ec;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .slider-control input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
       }
 
       main {
@@ -375,6 +467,15 @@
         .player {
           min-height: 430px;
         }
+
+        .settings-head {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .ears {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -385,57 +486,109 @@
           <h1>Mi Musica</h1>
           <p class="subtitle">Elige la carpeta de canciones de tu tarjeta SD y reproduce cualquier archivo de audio.</p>
         </div>
+        <button class="settings-open" id="openSettings" type="button">Ajustes de auriculares</button>
         <input class="hidden" id="folderInput" type="file" webkitdirectory multiple accept="audio/*" />
       </header>
 
-      <section class="button-deck" aria-label="Controles grandes">
-        <button class="primary" id="openFolder" type="button">Abrir carpeta de la tarjeta SD</button>
-        <button class="control-button play-button" id="playPause" type="button">Play / Pausa</button>
-        <button class="control-button stop-button" id="stop" type="button">Parada</button>
-        <div class="transport-row">
-          <button class="control-button skip-button" id="previousSong" type="button">Marcha atras</button>
-          <button class="control-button skip-button" id="nextSong" type="button">Marcha adelante</button>
+      <div class="screen" id="mainScreen">
+        <section class="button-deck" aria-label="Controles grandes">
+          <button class="primary" id="openFolder" type="button">Abrir carpeta de la tarjeta SD</button>
+          <button class="control-button play-button" id="playPause" type="button">Play / Pausa</button>
+          <button class="control-button stop-button" id="stop" type="button">Parada</button>
+          <div class="transport-row">
+            <button class="control-button skip-button" id="previousSong" type="button">Marcha atras</button>
+            <button class="control-button skip-button" id="nextSong" type="button">Marcha adelante</button>
+          </div>
+        </section>
+
+        <main>
+          <section class="sidebar" aria-label="Canciones">
+            <div class="stats">
+              <div class="stat">
+                <strong id="songCount">0</strong>
+                <span>canciones</span>
+              </div>
+              <div class="stat">
+                <strong id="formatCount">0</strong>
+                <span>formatos</span>
+              </div>
+            </div>
+
+            <div class="search">
+              <input id="search" type="search" placeholder="Buscar cancion" autocomplete="off" />
+            </div>
+
+            <div class="songs" id="songs">
+              <div class="empty">
+                Pulsa el boton para abrir tu carpeta de musica. La app encontrara MP3, WAV, OGG, FLAC, M4A y otros audios.
+              </div>
+            </div>
+          </section>
+
+          <section class="player" aria-label="Reproductor">
+            <div class="now">
+              <div class="disc" id="disc">
+                <div class="label" id="discLabel">Sin cancion</div>
+              </div>
+            </div>
+
+            <div class="controls">
+              <p class="track-title" id="trackTitle">Selecciona una cancion</p>
+              <p class="track-path" id="trackPath">Todavia no hay ningun archivo cargado.</p>
+              <audio id="audio" controls preload="metadata"></audio>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <section class="screen settings-screen hidden-screen" id="settingsScreen" aria-label="Ajustes de auriculares">
+        <div class="settings-head">
+          <h2>Ajustes de auriculares</h2>
+          <button class="back-button" id="closeSettings" type="button">Volver</button>
+        </div>
+
+        <div class="ears">
+          <div class="ear-panel">
+            <h3>Izquierdo</h3>
+            <div class="slider-control">
+              <label for="leftVolume">Volumen <span id="leftVolumeValue">100%</span></label>
+              <input id="leftVolume" data-channel="left" data-setting="volume" type="range" min="0" max="150" value="100" />
+            </div>
+            <div class="slider-control">
+              <label for="leftBass">Graves <span id="leftBassValue">0 dB</span></label>
+              <input id="leftBass" data-channel="left" data-setting="bass" type="range" min="-12" max="12" value="0" />
+            </div>
+            <div class="slider-control">
+              <label for="leftMid">Medios <span id="leftMidValue">0 dB</span></label>
+              <input id="leftMid" data-channel="left" data-setting="mid" type="range" min="-12" max="12" value="0" />
+            </div>
+            <div class="slider-control">
+              <label for="leftTreble">Agudos <span id="leftTrebleValue">0 dB</span></label>
+              <input id="leftTreble" data-channel="left" data-setting="treble" type="range" min="-12" max="12" value="0" />
+            </div>
+          </div>
+
+          <div class="ear-panel">
+            <h3>Derecho</h3>
+            <div class="slider-control">
+              <label for="rightVolume">Volumen <span id="rightVolumeValue">100%</span></label>
+              <input id="rightVolume" data-channel="right" data-setting="volume" type="range" min="0" max="150" value="100" />
+            </div>
+            <div class="slider-control">
+              <label for="rightBass">Graves <span id="rightBassValue">0 dB</span></label>
+              <input id="rightBass" data-channel="right" data-setting="bass" type="range" min="-12" max="12" value="0" />
+            </div>
+            <div class="slider-control">
+              <label for="rightMid">Medios <span id="rightMidValue">0 dB</span></label>
+              <input id="rightMid" data-channel="right" data-setting="mid" type="range" min="-12" max="12" value="0" />
+            </div>
+            <div class="slider-control">
+              <label for="rightTreble">Agudos <span id="rightTrebleValue">0 dB</span></label>
+              <input id="rightTreble" data-channel="right" data-setting="treble" type="range" min="-12" max="12" value="0" />
+            </div>
+          </div>
         </div>
       </section>
-
-      <main>
-        <section class="sidebar" aria-label="Canciones">
-          <div class="stats">
-            <div class="stat">
-              <strong id="songCount">0</strong>
-              <span>canciones</span>
-            </div>
-            <div class="stat">
-              <strong id="formatCount">0</strong>
-              <span>formatos</span>
-            </div>
-          </div>
-
-          <div class="search">
-            <input id="search" type="search" placeholder="Buscar cancion" autocomplete="off" />
-          </div>
-
-          <div class="songs" id="songs">
-            <div class="empty">
-              Pulsa el boton para abrir tu carpeta de musica. La app encontrara MP3, WAV, OGG, FLAC, M4A y otros audios.
-            </div>
-          </div>
-        </section>
-
-        <section class="player" aria-label="Reproductor">
-          <div class="now">
-            <div class="disc" id="disc">
-              <div class="label" id="discLabel">Sin cancion</div>
-            </div>
-          </div>
-
-          <div class="controls">
-            <p class="track-title" id="trackTitle">Selecciona una cancion</p>
-            <p class="track-path" id="trackPath">Todavia no hay ningun archivo cargado.</p>
-            <audio id="audio" controls preload="metadata"></audio>
-          </div>
-        </section>
-      </main>
     </div>
 
     <script>
@@ -454,10 +607,15 @@
       ]);
 
       const openFolderButton = document.querySelector("#openFolder");
+      const openSettingsButton = document.querySelector("#openSettings");
+      const closeSettingsButton = document.querySelector("#closeSettings");
       const playPauseButton = document.querySelector("#playPause");
       const stopButton = document.querySelector("#stop");
       const previousSongButton = document.querySelector("#previousSong");
       const nextSongButton = document.querySelector("#nextSong");
+      const mainScreen = document.querySelector("#mainScreen");
+      const settingsScreen = document.querySelector("#settingsScreen");
+      const audioSliders = document.querySelectorAll("[data-channel][data-setting]");
       const folderInput = document.querySelector("#folderInput");
       const songsElement = document.querySelector("#songs");
       const searchInput = document.querySelector("#search");
@@ -473,6 +631,13 @@
       let filteredSongs = [];
       let currentUrl = "";
       let activeId = "";
+      let audioContext = null;
+      let sourceNode = null;
+      let channelNodes = null;
+      const audioSettings = {
+        left: { volume: 100, bass: 0, mid: 0, treble: 0 },
+        right: { volume: 100, bass: 0, mid: 0, treble: 0 },
+      };
 
       function getExtension(name) {
         const parts = name.toLowerCase().split(".");
@@ -486,6 +651,85 @@
       function isAudioFile(file) {
         const extension = getExtension(file.name);
         return file.type.startsWith("audio/") || audioExtensions.has(extension);
+      }
+
+      function setAudioParam(param, value) {
+        if (!audioContext) {
+          return;
+        }
+
+        param.setTargetAtTime(value, audioContext.currentTime, 0.01);
+      }
+
+      function makeChannel(context) {
+        const bass = context.createBiquadFilter();
+        const mid = context.createBiquadFilter();
+        const treble = context.createBiquadFilter();
+        const gain = context.createGain();
+
+        bass.type = "lowshelf";
+        bass.frequency.value = 180;
+
+        mid.type = "peaking";
+        mid.frequency.value = 1000;
+        mid.Q.value = 1;
+
+        treble.type = "highshelf";
+        treble.frequency.value = 3200;
+
+        bass.connect(mid);
+        mid.connect(treble);
+        treble.connect(gain);
+
+        return { bass, mid, treble, gain };
+      }
+
+      function applyAudioSettings() {
+        if (!channelNodes) {
+          return;
+        }
+
+        for (const side of ["left", "right"]) {
+          const settings = audioSettings[side];
+          const nodes = channelNodes[side];
+          setAudioParam(nodes.gain.gain, settings.volume / 100);
+          setAudioParam(nodes.bass.gain, settings.bass);
+          setAudioParam(nodes.mid.gain, settings.mid);
+          setAudioParam(nodes.treble.gain, settings.treble);
+        }
+      }
+
+      function setupAudioGraph() {
+        if (audioContext || !("AudioContext" in window || "webkitAudioContext" in window)) {
+          return;
+        }
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+        sourceNode = audioContext.createMediaElementSource(audio);
+
+        const splitter = audioContext.createChannelSplitter(2);
+        const merger = audioContext.createChannelMerger(2);
+        const left = makeChannel(audioContext);
+        const right = makeChannel(audioContext);
+
+        sourceNode.connect(splitter);
+        splitter.connect(left.bass, 0);
+        splitter.connect(right.bass, 1);
+        left.gain.connect(merger, 0, 0);
+        right.gain.connect(merger, 0, 1);
+        merger.connect(audioContext.destination);
+
+        channelNodes = { left, right };
+        applyAudioSettings();
+      }
+
+      async function prepareAudioOutput() {
+        setupAudioGraph();
+
+        if (audioContext && audioContext.state === "suspended") {
+          await audioContext.resume();
+        }
       }
 
       async function readModernDirectory(directoryHandle, path = "") {
@@ -574,7 +818,7 @@
         );
       }
 
-      function playSong(song) {
+      async function playSong(song) {
         if (currentUrl) {
           URL.revokeObjectURL(currentUrl);
         }
@@ -582,6 +826,7 @@
         currentUrl = URL.createObjectURL(song.file);
         activeId = song.id;
         audio.src = currentUrl;
+        await prepareAudioOutput();
         audio.play().catch(() => {
           trackPath.textContent = "Pulsa reproducir en el control de audio para empezar.";
         });
@@ -616,13 +861,14 @@
         playSong(filteredSongs[previousIndex]);
       }
 
-      function togglePlayback() {
+      async function togglePlayback() {
         if (!audio.src && filteredSongs.length > 0) {
           playSong(filteredSongs[0]);
           return;
         }
 
         if (audio.paused) {
+          await prepareAudioOutput();
           audio.play();
           return;
         }
@@ -634,6 +880,36 @@
         audio.pause();
         audio.currentTime = 0;
         disc.classList.remove("playing");
+      }
+
+      function updateSliderLabel(input) {
+        const id = `${input.id}Value`;
+        const output = document.querySelector(`#${id}`);
+        const value = Number(input.value);
+
+        if (!output) {
+          return;
+        }
+
+        output.textContent = input.dataset.setting === "volume" ? `${value}%` : `${value} dB`;
+      }
+
+      function updateAudioSetting(input) {
+        const channel = input.dataset.channel;
+        const setting = input.dataset.setting;
+        audioSettings[channel][setting] = Number(input.value);
+        updateSliderLabel(input);
+        applyAudioSettings();
+      }
+
+      function showSettingsScreen() {
+        mainScreen.classList.add("hidden-screen");
+        settingsScreen.classList.remove("hidden-screen");
+      }
+
+      function showMainScreen() {
+        settingsScreen.classList.add("hidden-screen");
+        mainScreen.classList.remove("hidden-screen");
       }
 
       async function openMusicFolder() {
@@ -654,10 +930,17 @@
       }
 
       openFolderButton.addEventListener("click", openMusicFolder);
+      openSettingsButton.addEventListener("click", showSettingsScreen);
+      closeSettingsButton.addEventListener("click", showMainScreen);
       playPauseButton.addEventListener("click", togglePlayback);
       stopButton.addEventListener("click", stopPlayback);
       previousSongButton.addEventListener("click", playPreviousSong);
       nextSongButton.addEventListener("click", playNextSong);
+
+      audioSliders.forEach((input) => {
+        updateSliderLabel(input);
+        input.addEventListener("input", () => updateAudioSetting(input));
+      });
 
       folderInput.addEventListener("change", () => {
         loadSongs(readFallbackFiles(folderInput.files));
